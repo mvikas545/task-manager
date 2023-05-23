@@ -74,6 +74,71 @@ app.get("/tasks/:id", async (req, res) => {
   }
 });
 
+app.patch("/users/:id", async (req, res) => {
+  const updateableField = ["name", "email", "password", "age"];
+  try {
+    const updates = Object.keys(req.body);
+    const isValidUpdate = updates.every((update) =>
+      updateableField.includes(update)
+    );
+    if (!isValidUpdate) {
+      res.status(400).send("inavalid update");
+    } else {
+      const user = await User.findByIdAndUpdate(req.params.id, { ...req.body });
+
+      if (!user) {
+        res.status(404).send("user not found");
+      }
+      res.send(user);
+    }
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+app.patch("/tasks/:id", async (req, res) => {
+  const updateableField = ["description", "completed"];
+  try {
+    const updates = Object.keys(req.body);
+    const isValidUpdate = updates.every((update) =>
+      updateableField.includes(update)
+    );
+    if (!isValidUpdate) {
+      res.status(400).send("Invalid update");
+    } else {
+      const task = await User.findByIdAndUpdate(req.params.id, { ...req.body });
+      if (!task) {
+        res.status(404).send("Task not found");
+      }
+      res.send(task);
+    }
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+
+app.delete("/users/:id", async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
+      res.status(404).send("user not found");
+    }
+    res.send(user);
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+app.delete("/tasks/:id", async (req, res) => {
+  try {
+    const task = await Task.findByIdAndDelete(req.params.id);
+    if (!task) {
+      res.status(404).send("task not found");
+    }
+    res.send(task);
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+
 app.listen(port, () => {
   console.log("Server is up on port", port);
 });
