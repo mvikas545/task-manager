@@ -46,10 +46,13 @@ router.patch("/tasks/:id", async (req, res) => {
     if (!isValidUpdate) {
       res.status(400).send("Invalid update");
     } else {
-      const task = await User.findByIdAndUpdate(req.params.id, { ...req.body });
+      const task = await Task.findById(req.params.id);
       if (!task) {
         res.status(404).send("Task not found");
+        return;
       }
+      updates.forEach((update) => (task[update] = req.body[update]));
+      await task.save();
       res.send(task);
     }
   } catch (error) {

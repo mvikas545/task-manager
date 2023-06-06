@@ -1,5 +1,6 @@
 const express = require("express");
 const User = require("../db/models/user");
+const auth = require("../middleware/auth");
 
 const router = new express.Router();
 
@@ -8,19 +9,32 @@ router.post("/users", async (req, res) => {
 
   try {
     await user.save();
-    res.status(201).send(user);
+    const token = user.generateJsonWebToken();
+    res.status(201).send({ user, token });
   } catch (error) {
     res.status(400).send(error);
   }
 });
 
-router.get("/users", async (req, res) => {
+router.post("/users/login", async (req, res) => {
   try {
-    const users = await User.find({});
-    res.send(users);
+    const user = await User.findUserByCredential(
+      req.body.email,
+      req.body.password
+    );
+    const token = user.generateJsonWebToken();
+    if (!user) {
+      res.status(400);
+      return;
+    }
+    res.send({ user, token });
   } catch (error) {
-    res.status(500).send(e);
+    res.status(400).send(error);
   }
+});
+
+router.get("/users/me", auth, async (req, res) => {
+  res.send(req.user);
 });
 
 router.get("/users/:id", async (req, res) => {
@@ -46,11 +60,13 @@ router.patch("/users/:id", async (req, res) => {
     if (!isValidUpdate) {
       res.status(400).send("inavalid update");
     } else {
-      const user = await User.findByIdAndUpdate(req.params.id, { ...req.body });
-
+      const user = await User.findById(req.params.id);
       if (!user) {
         res.status(404).send("user not found");
+        return;
       }
+      updates.forEach((update) => (user[update] = req.body[update]));
+      await user.save();
       res.send(user);
     }
   } catch (error) {
