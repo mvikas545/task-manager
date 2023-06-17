@@ -4,53 +4,56 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Task = require("../models/task");
 
-const UserSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  email: {
-    type: String,
-    unique: true,
-    required: true,
-    trim: true,
-    lowercase: true,
-    validate: (value) => {
-      if (!validator.isEmail(value)) {
-        throw new Error("Invalid email");
-      }
+const UserSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
     },
-  },
-  password: {
-    type: String,
-    required: true,
-    trim: true,
-    minLength: 7,
-    validate: (value) => {
-      if (value.toLowerCase() === "password") {
-        throw new Error("Invalid password");
-      }
-    },
-  },
-  age: {
-    type: Number,
-    default: 0,
-    validate: (value) => {
-      if (value < 0) {
-        throw new Error("Age must be greater than zero");
-      }
-    },
-  },
-  tokens: [
-    {
-      token: {
-        type: String,
-        required: true,
+    email: {
+      type: String,
+      unique: true,
+      required: true,
+      trim: true,
+      lowercase: true,
+      validate: (value) => {
+        if (!validator.isEmail(value)) {
+          throw new Error("Invalid email");
+        }
       },
     },
-  ],
-});
+    password: {
+      type: String,
+      required: true,
+      trim: true,
+      minLength: 7,
+      validate: (value) => {
+        if (value.toLowerCase() === "password") {
+          throw new Error("Invalid password");
+        }
+      },
+    },
+    age: {
+      type: Number,
+      default: 0,
+      validate: (value) => {
+        if (value < 0) {
+          throw new Error("Age must be greater than zero");
+        }
+      },
+    },
+    tokens: [
+      {
+        token: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
+  },
+  { timestamps: true }
+);
 
 UserSchema.virtual("tasks", {
   ref: "Task",
